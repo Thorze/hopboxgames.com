@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hop Box</title>
+<meta name="description" content="Hop Box, le jeu de saut à une main sur Android : maintiens, relâche, atterris pile au centre. Rejoins le test.">
+<meta name="theme-color" content="#0D1632">
+<meta property="og:title" content="Hop Box">
+<meta property="og:description" content="Maintiens, saute, atterris pile au centre. Facile… jusqu'à la tornade.">
+<meta property="og:image" content="https://hopboxgames.com/img/icone-512.png">
+<meta property="og:url" content="https://hopboxgames.com/">
+<meta property="og:type" content="website">
+<link rel="icon" href="img/icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/icone-180.png">
+<style>
+  /*
+   * Page d'accueil de hopboxgames.com.
+   * Pour passer du test fermé à la sortie publique : mettre PUBLIC = true dans le script en bas de page.
+   */
+  @font-face { font-family: "Lilita One"; src: url("fonts/LilitaOne-Regular.ttf") format("truetype"); font-display: swap; }
+  :root {
+    --night: #0D1632; --card: #1D2E5C; --card2: #16244B; --ink: #FFFFFF; --muted: #B9C5E6;
+    --gold: #F7DE9C; --gold2: #B2823A; --green: #5FD95A; --green2: #2FA63A; --orange: #FF7A45;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--night); color: var(--ink);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: var(--gold); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+  /* En-tête : le ciel du jeu */
+  .hero {
+    background: linear-gradient(#FDE2C8, #C9E4F5 70%, #9FC6E8);
+    color: #2E3A59; text-align: center; padding: 28px 0 0; position: relative; overflow: hidden;
+  }
+  .hero .lang { position: absolute; top: 12px; right: 16px; }
+  .lang button {
+    font: inherit; font-size: 14px; border: 0; border-radius: 999px; padding: 4px 10px; cursor: pointer;
+    background: rgba(46, 58, 89, 0.12); color: #2E3A59;
+  }
+  .lang button[aria-pressed="true"] { background: #2E3A59; color: #fff; }
+  .logo { width: min(320px, 70vw); height: auto; display: block; margin: 12px auto 4px; }
+  .tagline { font-family: "Lilita One", system-ui, sans-serif; font-size: clamp(22px, 5vw, 30px); margin: 4px 0 2px; }
+  .sub { margin: 0 auto 18px; max-width: 520px; color: #44506F; }
+  .badge {
+    display: inline-block; font-family: "Lilita One", system-ui, sans-serif; letter-spacing: 0.5px;
+    background: var(--orange); color: #fff; border-radius: 999px; padding: 6px 14px; margin-bottom: 18px;
+    box-shadow: 0 3px 0 #C4552B;
+  }
+  .shots { display: flex; gap: 12px; justify-content: center; padding: 6px 0 0; margin-bottom: -40px; }
+  .shots img {
+    width: 150px; height: auto; aspect-ratio: 9 / 16; border-radius: 18px; border: 4px solid #fff;
+    box-shadow: 0 10px 30px rgba(13, 22, 50, 0.35); background: #C9E4F5;
+  }
+  .shots img:nth-child(2) { transform: translateY(-14px); }
+  .shots img:nth-child(3) { transform: translateY(-6px); }
+  @media (max-width: 640px) { .shots img:nth-child(4) { display: none; } .shots img { width: 28vw; } }
+
+  /* Carte principale (style des fenêtres du jeu : bleu nuit, bord doré) */
+  main { padding: 64px 0 24px; }
+  .card {
+    max-width: 640px; margin: 0 auto; border-radius: 22px; padding: 26px 22px 22px; border: 3px solid transparent;
+    background: linear-gradient(var(--card), var(--card2)) padding-box, linear-gradient(var(--gold), var(--gold2) 55%, var(--gold)) border-box;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  }
+  h1, h2 { font-family: "Lilita One", system-ui, sans-serif; font-weight: normal; line-height: 1.15; }
+  h1 { font-size: clamp(24px, 5.5vw, 32px); margin: 0 0 8px; text-align: center; }
+  .lead { color: var(--muted); text-align: center; margin: 0 0 22px; }
+  .friend {
+    background: rgba(95, 217, 90, 0.12); border: 2px dashed var(--green); border-radius: 14px; padding: 12px 14px;
+    margin: 0 0 20px; text-align: center;
+  }
+  .friend strong { font-family: "Lilita One", system-ui, sans-serif; font-size: 26px; letter-spacing: 3px; color: var(--green); }
+  ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
+  ol.steps li {
+    counter-increment: s; position: relative; padding: 0 0 22px 54px;
+  }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center; font-family: "Lilita One", system-ui, sans-serif; font-size: 20px;
+    background: linear-gradient(var(--gold), var(--gold2)); color: var(--night);
+  }
+  ol.steps li:not(:last-child)::after {
+    content: ""; position: absolute; left: 18px; top: 40px; bottom: 4px; width: 2px; background: rgba(247, 222, 156, 0.35);
+  }
+  .steps h2 { font-size: 20px; margin: 4px 0 4px; }
+  .steps p { margin: 0 0 10px; color: var(--muted); }
+  .btn {
+    display: inline-block; text-decoration: none; color: #fff; font-family: "Lilita One", system-ui, sans-serif;
+    font-size: 18px; letter-spacing: 0.3px; padding: 12px 20px; border-radius: 14px; min-height: 48px;
+    background: linear-gradient(var(--green), var(--green2)); box-shadow: 0 4px 0 #1E7A28, inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3); overflow-wrap: anywhere;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #1E7A28; }
+  .btn.big { display: block; text-align: center; font-size: 22px; padding: 16px 20px; }
+  .wait { display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-weight: 600; }
+  .note {
+    margin: 4px 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, 0.06);
+    color: var(--muted); font-size: 15px;
+  }
+  .note b { color: #fff; }
+
+  /* Ce qu'on trouve dans le jeu */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; max-width: 760px; margin: 28px auto 0; }
+  .feat { background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 14px 16px; }
+  .feat .ico { font-size: 26px; }
+  .feat h3 { font-family: "Lilita One", system-ui, sans-serif; font-weight: normal; font-size: 18px; margin: 4px 0 2px; }
+  .feat p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding: 28px 0 36px; }
+  footer a { color: var(--muted); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="lang" role="group" aria-label="Langue / Language">
+    <button type="button" data-lang="fr" aria-pressed="true">FR</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+  <div class="wrap">
+    <img class="logo" src="img/logo.webp" width="800" height="577" alt="Hop Box">
+    <p class="tagline" data-t="tagline">Maintiens, relâche… parfait !</p>
+    <p class="sub" data-t="sub">Le jeu de saut qui se joue d'une main. Facile… jusqu'à la tornade.</p>
+    <span class="badge" data-t="badge" id="badge">Android · en test</span>
+    <div class="shots" aria-hidden="true">
+      <img data-shot="parfait" src="img/fr_parfait.webp" alt="" width="432" height="768">
+      <img data-shot="aventure" src="img/fr_aventure.webp" alt="" width="432" height="768">
+      <img data-shot="duel" src="img/fr_duel.webp" alt="" width="432" height="768">
+      <img data-shot="ovni" src="img/fr_ovni.webp" alt="" width="432" height="768">
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="friend" id="friend" hidden>
+      <span data-t="friend">Un ami t'invite ! Une fois dans le jeu, ajoute son code ami :</span><br>
+      <strong id="friend-code"></strong>
+    </div>
+
+    <!-- Test fermé : les 4 étapes -->
+    <div id="testing">
+      <h1 data-t="test_title">Hop Box est en test fermé</h1>
+      <p class="lead" data-t="test_lead">Le jeu n'est pas encore en accès libre sur le Play Store. Deviens testeur en 4 étapes, c'est gratuit.</p>
+      <ol class="steps">
+        <li>
+          <h2 data-t="s1_title">Rejoins le groupe des testeurs</h2>
+          <p data-t="s1_text">Avec le compte Google de ton téléphone Android.</p>
+          <a class="btn" href="https://groups.google.com/g/hopbox-testeur-android" target="_blank" rel="noopener" data-t="s1_btn">Rejoindre le groupe Google</a>
+        </li>
+        <li>
+          <h2 data-t="s2_title">Accepte le test</h2>
+          <p data-t="s2_text">Sur la page de Google Play, appuie sur « Devenir testeur ».</p>
+          <a class="btn" href="https://play.google.com/apps/testing/com.sautique.game" target="_blank" rel="noopener" data-t="s2_btn">Rejoindre le test</a>
+        </li>
+        <li>
+          <h2 data-t="s3_title">Patiente 5 minutes</h2>
+          <p data-t="s3_text">Google Play met quelques minutes à ouvrir l'accès.</p>
+          <span class="wait">⏳ <span data-t="s3_wait">5 minutes environ</span></span>
+        </li>
+        <li>
+          <h2 data-t="s4_title">Installe et joue</h2>
+          <p data-t="s4_text">Installe Hop Box depuis Google Play, puis ouvre-le.</p>
+          <a class="btn" href="https://play.google.com/store/apps/details?id=com.sautique.game" target="_blank" rel="noopener" data-t="s4_btn">Installer Hop Box</a>
+        </li>
+      </ol>
+      <p class="note" data-t-html="note">Utilise <b>le même compte Google</b> à chaque étape. Si Google Play affiche « introuvable », attends encore un peu puis réessaie. Hop Box n'existe pour l'instant que sur Android.</p>
+    </div>
+
+    <!-- Sortie publique : un seul bouton (PUBLIC = true) -->
+    <div id="public" hidden>
+      <h1 data-t="pub_title">Hop Box est sur Google Play</h1>
+      <p class="lead" data-t="pub_lead">Gratuit, sans vraie pub, et ça se joue d'une main.</p>
+      <a class="btn big" href="https://play.google.com/store/apps/details?id=com.sautique.game" rel="noopener" data-t="pub_btn">Télécharger sur Google Play</a>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feat"><div class="ico">🎯</div><h3 data-t="f1_t">Pile au centre</h3><p data-t="f1_p">Plus tu vises juste, plus ça rapporte. Enchaîne les parfaits.</p></div>
+    <div class="feat"><div class="ico">🗺️</div><h3 data-t="f2_t">24 chapitres</h3><p data-t="f2_p">Une aventure avec une histoire et des persos à délivrer.</p></div>
+    <div class="feat"><div class="ico">⚔️</div><h3 data-t="f3_t">Duels entre amis</h3><p data-t="f3_p">Le même parcours pour vous deux. Le meilleur gagne.</p></div>
+    <div class="feat"><div class="ico">🌪️</div><h3 data-t="f4_t">Des imprévus</h3><p data-t="f4_p">Tornade, ovni, baleine, aigle… ça arrive.</p></div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <a href="confidentialite.html" data-t="privacy">Règles de confidentialité</a> ·
+  <a href="mailto:contact@hopboxgames.com">contact@hopboxgames.com</a>
+</footer>
+
+<script>
+  // Sortie publique sur le Play Store : passer à true (le test fermé disparaît, il ne reste que le bouton Play Store)
+  const PUBLIC = false;
+
+  const T = {
+    en: {
+      tagline: "Hold, release… perfect!",
+      sub: "The one-handed jumping game. Easy… until the tornado shows up.",
+      badge: "Android · in testing",
+      friend: "A friend invited you! Once in the game, add their friend code:",
+      test_title: "Hop Box is in closed testing",
+      test_lead: "The game isn't open to everyone on the Play Store yet. Become a tester in 4 steps, it's free.",
+      s1_title: "Join the testers group",
+      s1_text: "With the Google account of your Android phone.",
+      s1_btn: "Join the Google group",
+      s2_title: "Accept the test",
+      s2_text: "On the Google Play page, tap “Become a tester”.",
+      s2_btn: "Join the test",
+      s3_title: "Wait 5 minutes",
+      s3_text: "Google Play takes a few minutes to open access.",
+      s3_wait: "about 5 minutes",
+      s4_title: "Install and play",
+      s4_text: "Install Hop Box from Google Play, then open it.",
+      s4_btn: "Install Hop Box",
+      note: "Use <b>the same Google account</b> for every step. If Google Play says “not found”, wait a little longer and try again. For now, Hop Box is only on Android.",
+      pub_title: "Hop Box is on Google Play",
+      pub_lead: "Free, no real ads, and you play it with one hand.",
+      pub_btn: "Get it on Google Play",
+      badge_pub: "Free on Android",
+      f1_t: "Dead center", f1_p: "The better your aim, the more you score. Chain perfect landings.",
+      f2_t: "24 chapters", f2_p: "An adventure with a story and characters to rescue.",
+      f3_t: "Duels with friends", f3_p: "The same course for both of you. Best one wins.",
+      f4_t: "Surprises", f4_p: "Tornado, UFO, whale, eagle… it happens.",
+      privacy: "Privacy policy",
+      title: "Hop Box – the one-handed jumping game"
+    }
+  };
+  const FR = {};
+  document.querySelectorAll("[data-t]").forEach(el => FR[el.dataset.t] = el.textContent);
+  document.querySelectorAll("[data-t-html]").forEach(el => FR[el.dataset.tHtml] = el.innerHTML);
+  FR.badge_pub = "Gratuit sur Android";
+  FR.title = "Hop Box – le jeu de saut à une main";
+  T.fr = FR;
+
+  function setLang(lang) {
+    const t = T[lang] || T.fr;
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-t]").forEach(el => { if (t[el.dataset.t]) el.textContent = t[el.dataset.t]; });
+    document.querySelectorAll("[data-t-html]").forEach(el => { if (t[el.dataset.tHtml]) el.innerHTML = t[el.dataset.tHtml]; });
+    if (PUBLIC) document.getElementById("badge").textContent = t.badge_pub;
+    document.querySelectorAll("[data-shot]").forEach(img => img.src = "img/" + lang + "_" + img.dataset.shot + ".webp");
+    document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    document.title = t.title;
+    try { localStorage.setItem("hb_lang", lang); } catch (e) {}
+  }
+
+  document.getElementById("testing").hidden = PUBLIC;
+  document.getElementById("public").hidden = !PUBLIC;
+
+  // Lien d'invitation : hopboxgames.com/?ami=K7P3QX (code ami du jeu : 6 caractères, ni 0/O ni 1/I)
+  const code = (new URLSearchParams(location.search).get("ami") || "").toUpperCase();
+  if (/^[A-HJ-NP-Z2-9]{6}$/.test(code)) {
+    document.getElementById("friend-code").textContent = code;
+    document.getElementById("friend").hidden = false;
+  }
+
+  let saved = null;
+  try { saved = localStorage.getItem("hb_lang"); } catch (e) {}
+  const browser = (navigator.language || "fr").slice(0, 2).toLowerCase();
+  setLang(saved || (browser === "fr" ? "fr" : "en"));
+  document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+</script>
+</body>
+</html>
